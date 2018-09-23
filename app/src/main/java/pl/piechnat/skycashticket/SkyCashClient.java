@@ -16,11 +16,11 @@ import java.nio.charset.StandardCharsets;
 
 class SkyCashClient {
 
-    static final int LOGIN_SUCCESSFUL = 0, ALREADY_LOGGED_IN = 1;
+    public static final int LOGIN_SUCCESSFUL = 0, ALREADY_LOGGED_IN = 1;
 
     private final int CONNECTION_TIMEOUT = 5000;
     private SkyCashData data;
-    /* private */ JSONObject loginReq, initPayReq, confirmPayReq, getInfoReq, response;
+    private JSONObject loginReq, initPayReq, confirmPayReq, getInfoReq, response;
 
     SkyCashClient(SkyCashData skyCashData) {
         data = skyCashData;
@@ -111,7 +111,7 @@ class SkyCashClient {
         }
     }
 
-    /* private */ JSONObject sendData(JSONObject jsonData) throws SkyCashException {
+    private JSONObject sendData(JSONObject jsonData) throws SkyCashException {
         String sessionId = data.getSessionId();
         HttpURLConnection conn = null;
         try {
@@ -149,7 +149,11 @@ class SkyCashClient {
         }
     }
 
-    int login() throws SkyCashException {
+    public void updateBalance() throws Exception {
+        data.lastBalance = sendData(getInfoReq).getJSONObject("accountInfo").getInt("availableBalanceInTicks");
+    }
+
+    public int login() throws SkyCashException {
         if (data.getSessionId() != null) return ALREADY_LOGGED_IN;
         try {
             data.setSessionId(sendData(loginReq).getString("sessionId"));
@@ -160,11 +164,11 @@ class SkyCashClient {
         }
     }
 
-    void buyTicket() throws SkyCashException {
+    public void buyTicket() throws SkyCashException {
         try {
             confirmPayReq.put("paymentReference", sendData(initPayReq).getString("payReference"));
             data.setTicket(sendData(confirmPayReq));
-            data.lastBalance = sendData(getInfoReq).getJSONObject("accountInfo").getInt("availableBalanceInTicks"); // ?????????????????
+            updateBalance();
             data.setLastError(null);
             data.setSessionId(null);
         } catch(SkyCashException e) { throw e; } catch (Exception e) {

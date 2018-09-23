@@ -184,9 +184,7 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             client = new SkyCashClient(data);
             try {
-                if (client.login() == SkyCashClient.ALREADY_LOGGED_IN) {
-                    data.lastBalance = client.sendData(client.getInfoReq).getJSONObject("accountInfo").getInt("availableBalanceInTicks");
-                }
+                if (client.login() == SkyCashClient.ALREADY_LOGGED_IN) client.updateBalance();
             } catch (Exception e) {
                 data.setLastError(e.getMessage());
             }
